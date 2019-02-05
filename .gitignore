@@ -1,14 +1,12 @@
 *.a
 *.bin
 *.hex
-*.map
 *.log
 *.elf
 *.zip
 *.d
 *.o
 *.e
-*.ihex
 *.pyc
 *~
 build/*
@@ -34,7 +32,6 @@ COOJA.testlog
 *.openmote-cc2538
 *.simplelink
 *.sky
-*.firmware
 *.cc26x0-cc13x0
 *.zoul
 
