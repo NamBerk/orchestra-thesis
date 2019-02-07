@@ -51,10 +51,6 @@ PROCESS_THREAD(udp_client_process, ev, data)
   /* Initialize UDP connection */
   simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
                       UDP_SERVER_PORT, udp_rx_callback);
-					  
-	#if WITH_ORCHESTRA
-		orchestra_init();
-	#endif
 
   etimer_set(&periodic_timer, SEND_INTERVAL);
   while(1) {

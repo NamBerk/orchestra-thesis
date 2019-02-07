@@ -72,9 +72,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
   /* Initialize UDP connection */
   simple_udp_register(&udp_conn, UDP_SERVER_PORT, NULL,
                       UDP_CLIENT_PORT, udp_rx_callback);
-	#if WITH_ORCHESTRA
-	orchestra_init();
-	#endif
 
   PROCESS_END();
 }
