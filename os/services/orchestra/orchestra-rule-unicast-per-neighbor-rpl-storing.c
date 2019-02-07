@@ -45,7 +45,7 @@
 #include "net/ipv6/uip-ds6-route.h"
 #include "net/packetbuf.h"
 #include "net/routing/routing.h"
-
+#include "stdio.h"
 /*
  * The body of this rule should be compiled only when "nbr_routes" is available,
  * otherwise a link error causes build failure. "nbr_routes" is compiled if
@@ -64,7 +64,7 @@ static uint16_t channel_offset = 0;
 static struct tsch_slotframe *sf_unicast;
 
 /*---------------------------------------------------------------------------*/
-static uint16_t
+static uint16_t //
 get_node_timeslot(const linkaddr_t *addr)
 {
   if(addr != NULL && ORCHESTRA_UNICAST_PERIOD > 0) {
@@ -94,8 +94,9 @@ add_uc_link(const linkaddr_t *linkaddr)
 {
   if(linkaddr != NULL) {
     uint16_t timeslot = get_node_timeslot(linkaddr);
-    uint8_t link_options = ORCHESTRA_UNICAST_SENDER_BASED ? LINK_OPTION_RX : LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG;
-
+	uint8_t link_options = ORCHESTRA_UNICAST_SENDER_BASED ? LINK_OPTION_RX : LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG;
+	
+	
     if(timeslot == get_node_timeslot(&linkaddr_node_addr)) {
       /* This is also our timeslot, add necessary flags */
       link_options |= ORCHESTRA_UNICAST_SENDER_BASED ? LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG: LINK_OPTION_RX;
@@ -200,15 +201,23 @@ new_time_source(const struct tsch_neighbor *old, const struct tsch_neighbor *new
 static void
 init(uint16_t sf_handle)
 {
+	int i;
   slotframe_handle = sf_handle;
   channel_offset = sf_handle;
   /* Slotframe for unicast transmissions */
   sf_unicast = tsch_schedule_add_slotframe(slotframe_handle, ORCHESTRA_UNICAST_PERIOD);
   uint16_t timeslot = get_node_timeslot(&linkaddr_node_addr);
-  tsch_schedule_add_link(sf_unicast,
+  /*tsch_schedule_add_link(sf_unicast,
             ORCHESTRA_UNICAST_SENDER_BASED ? LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG: LINK_OPTION_RX,
             LINK_TYPE_NORMAL, &tsch_broadcast_address,
-            timeslot, channel_offset);
+            timeslot, channel_offset); */ /*original code */
+			
+	for(i = 0; i < ORCHESTRA_UNICAST_PERIOD; i++){
+    tsch_schedule_add_link(sf_unicast,
+			 (i == timeslot ? LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG : 0) | LINK_OPTION_RX ,
+            LINK_TYPE_NORMAL, &tsch_broadcast_address,
+            i, channel_offset);
+  }  /*new code */
 }
 /*---------------------------------------------------------------------------*/
 struct orchestra_rule unicast_per_neighbor_rpl_storing = {

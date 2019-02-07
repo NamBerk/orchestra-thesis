@@ -62,7 +62,7 @@
  */
 
 const uint16_t tsch_timeslot_timing_us_10000[tsch_ts_elements_count] = {
-   1800, /* CCAOffset */
+   1119, /* CCAOffset */
     128, /* CCA */
    2120, /* TxOffset */
   (2120 - (TSCH_CONF_RX_WAIT / 2)), /* RxOffset */
