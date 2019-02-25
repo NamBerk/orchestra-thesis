@@ -103,6 +103,7 @@ frame-filtering-friendly on some platforms) */
 #define FRAME802154_ACKFRAME        (0x02)
 #define FRAME802154_CMDFRAME        (0x03)
 
+
 #define FRAME802154_BEACONREQ       (0x07)
 
 #define FRAME802154_IEEERESERVED    (0x00)

@@ -48,6 +48,7 @@
 #endif
 #include "net/routing/rpl-classic/rpl-private.h"
 
+
 #define DEBUG DEBUG_PRINT
 #include "net/ipv6/uip-debug.h"
 

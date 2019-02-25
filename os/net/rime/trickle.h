@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2007, Swedish Institute of Computer Science.
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,58 +30,65 @@
  *
  */
 
-#include "contiki.h"
-#include "net/routing/routing.h"
-#include "net/netstack.h"
-#include "net/ipv6/simple-udp.h"
-#include "project-conf.h"
-#include "orchestra.h"
-#include "flooding.h"
+/**
+ * \file
+ *         Header file for Trickle (reliable single source flooding) for Rime
+ * \author
+ *         Adam Dunkels <adam@sics.se>
+ */
 
+/**
+ * \addtogroup rime
+ * @{
+ */
 
+/**
+ * \defgroup trickle Reliable single-source multi-hop flooding
+ * @{
+ *
+ * The trickle module sends a single packet to all nodes on the network.
+ *
+ * \section trickle-channels Channels
+ *
+ * The trickle module uses 1 channel.
+ *
+ */
 
-#include "sys/log.h"
-#define LOG_MODULE "App"
-#define LOG_LEVEL LOG_LEVEL_INFO
+#ifndef TRICKLE_H_
+#define TRICKLE_H_
 
-//#define WITH_SERVER_REPLY 1
-#define UDP_CLIENT_PORT	8765
-#define UDP_SERVER_PORT	5678
+#include "sys/ctimer.h"
 
-static struct simple_udp_connection udp_conn;
+#include "net/rime/broadcast.h"
+#include "net/queuebuf.h"
 
-PROCESS(udp_server_process, "UDP server");
-AUTOSTART_PROCESSES(&udp_server_process);
-/*---------------------------------------------------------------------------*/
-static void
-udp_rx_callback(struct simple_udp_connection *c,
-         const uip_ipaddr_t *sender_addr,
-         uint16_t sender_port,
-         const uip_ipaddr_t *receiver_addr,
-         uint16_t receiver_port,
-         const uint8_t *data,
-         uint16_t datalen)
-{
-  LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
-  LOG_INFO_6ADDR(sender_addr);
-  LOG_INFO_("\n");
+#define TRICKLE_ATTRIBUTES  { PACKETBUF_ATTR_EPACKET_ID, PACKETBUF_ATTR_BIT * 8 },\
+                            BROADCAST_ATTRIBUTES
 
-}
-/*---------------------------------------------------------------------------*/
-PROCESS_THREAD(udp_server_process, ev, data)
-{
-	
-  PROCESS_BEGIN();
+struct trickle_conn;
 
-  /* Initialize DAG root */
-  NETSTACK_ROUTING.root_start();
+struct trickle_callbacks {
+  void (* recv)(struct trickle_conn *c);
+};
 
-  /* Initialize UDP connection */
-  simple_udp_register(&udp_conn, UDP_SERVER_PORT, NULL,
-                      UDP_CLIENT_PORT, udp_rx_callback);
+struct trickle_conn {
+  struct broadcast_conn c;
+  const struct trickle_callbacks *cb;
+  struct ctimer t, interval_timer, first_transmission_timer;
+  struct pt pt;
+  struct queuebuf *q;
+  clock_time_t interval;
+  uint8_t seqno;
+  uint8_t interval_scaling;
+  uint8_t duplicates;
+};
 
-	init_flooding();
+void trickle_open(struct trickle_conn *c, clock_time_t interval,
+		  uint16_t channel, const struct trickle_callbacks *cb);
+void trickle_close(struct trickle_conn *c);
 
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
+void trickle_send(struct trickle_conn *c);
+
+#endif /* TRICKLE_H_ */
+/** @} */
+/** @} */

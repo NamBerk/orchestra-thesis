@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2007, Swedish Institute of Computer Science.
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,58 +30,60 @@
  *
  */
 
-#include "contiki.h"
-#include "net/routing/routing.h"
-#include "net/netstack.h"
-#include "net/ipv6/simple-udp.h"
-#include "project-conf.h"
-#include "orchestra.h"
-#include "flooding.h"
+/**
+ * \file
+ *         Rime's channel abstraction
+ * \author
+ *         Adam Dunkels <adam@sics.se>
+ */
 
+#include "net/rime/chameleon.h"
+#include "net/rime/rime.h"
+#include "lib/list.h"
 
+LIST(channel_list);
 
-#include "sys/log.h"
-#define LOG_MODULE "App"
-#define LOG_LEVEL LOG_LEVEL_INFO
-
-//#define WITH_SERVER_REPLY 1
-#define UDP_CLIENT_PORT	8765
-#define UDP_SERVER_PORT	5678
-
-static struct simple_udp_connection udp_conn;
-
-PROCESS(udp_server_process, "UDP server");
-AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
-static void
-udp_rx_callback(struct simple_udp_connection *c,
-         const uip_ipaddr_t *sender_addr,
-         uint16_t sender_port,
-         const uip_ipaddr_t *receiver_addr,
-         uint16_t receiver_port,
-         const uint8_t *data,
-         uint16_t datalen)
+void
+channel_init(void)
 {
-  LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
-  LOG_INFO_6ADDR(sender_addr);
-  LOG_INFO_("\n");
-
+  list_init(channel_list);
 }
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(udp_server_process, ev, data)
+void
+channel_set_attributes(uint16_t channelno,
+		       const struct packetbuf_attrlist attrlist[])
 {
-	
-  PROCESS_BEGIN();
-
-  /* Initialize DAG root */
-  NETSTACK_ROUTING.root_start();
-
-  /* Initialize UDP connection */
-  simple_udp_register(&udp_conn, UDP_SERVER_PORT, NULL,
-                      UDP_CLIENT_PORT, udp_rx_callback);
-
-	init_flooding();
-
-  PROCESS_END();
+  struct channel *c;
+  c = channel_lookup(channelno);
+  if(c != NULL) {
+    c->attrlist = attrlist;
+    c->hdrsize = chameleon_hdrsize(attrlist);
+  }
+}
+/*---------------------------------------------------------------------------*/
+void
+channel_open(struct channel *c, uint16_t channelno)
+{
+  c->channelno = channelno;
+  list_add(channel_list, c);
+}
+/*---------------------------------------------------------------------------*/
+void
+channel_close(struct channel *c)
+{
+  list_remove(channel_list, c);
+}
+/*---------------------------------------------------------------------------*/
+struct channel *
+channel_lookup(uint16_t channelno)
+{
+  struct channel *c;
+  for(c = list_head(channel_list); c != NULL; c = list_item_next(c)) {
+    if(c->channelno == channelno) {
+      return c;
+    }
+  }
+  return NULL;
 }
 /*---------------------------------------------------------------------------*/

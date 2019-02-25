@@ -67,7 +67,7 @@ select_packet(uint16_t *slotframe, uint16_t *timeslot)
 static void
 init(uint16_t sf_handle)
 {
-  printf("INIT common\n");
+ 
   slotframe_handle = sf_handle;
   channel_offset = slotframe_handle;
   /* Default slotframe: for broadcast or unicast to neighbors we

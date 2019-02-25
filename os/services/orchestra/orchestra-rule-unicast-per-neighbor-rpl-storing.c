@@ -201,7 +201,7 @@ new_time_source(const struct tsch_neighbor *old, const struct tsch_neighbor *new
 static void
 init(uint16_t sf_handle)
 {
-  printf("INIT\n");
+  
   slotframe_handle = sf_handle;
   channel_offset = sf_handle;
   /* Slotframe for unicast transmissions */
@@ -213,16 +213,7 @@ init(uint16_t sf_handle)
             timeslot, channel_offset);
 
 
-	/*
-	 int i = timeslot;
-  uint8_t val = (i == timeslot ? LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG : 0) | LINK_OPTION_RX;
-  printf("XXX %d %d %d %d\n", timeslot, ORCHESTRA_UNICAST_PERIOD, val, LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG);
-	for(i = 0; i < ORCHESTRA_UNICAST_PERIOD; i++){
-    tsch_schedule_add_link(sf_unicast,
-			 (i == timeslot ? LINK_OPTION_TX | UNICAST_SLOT_SHARED_FLAG : 0) | LINK_OPTION_RX ,
-            LINK_TYPE_NORMAL, &tsch_broadcast_address,
-            i, channel_offset);
-  }  new code */
+	
 }
 /*---------------------------------------------------------------------------*/
 struct orchestra_rule unicast_per_neighbor_rpl_storing = {
