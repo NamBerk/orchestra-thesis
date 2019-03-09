@@ -22,7 +22,7 @@ struct rnc_pkt {
 	uint8_t coeff[K];
 	uint8_t msg_type;
 };
-
+struct broadcast_conn;
 void broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from);
 void init_rnc(void);
 void start_rnc(void);

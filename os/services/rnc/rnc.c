@@ -57,6 +57,7 @@ static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
 static struct broadcast_conn broadcast;
 
 void broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from) { 
+	
   if (mode != MODE_SINK && rank_coeff_matrix != FULL_RANK) { //
     nack_multiplier = 1;
     ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);

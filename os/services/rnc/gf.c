@@ -30,6 +30,8 @@ uint8_t gf_mul_precomp(uint8_t a, uint8_t b) {
   uint16_t y = gf16_precomp_log[b];
   return gf16_precomp_antilog[MOD15(x + y)];
 #endif
+
+return 0;
 }
 
 /* modular multiplicattion by computation */
@@ -96,6 +98,8 @@ uint8_t gf_inv_precomp(uint8_t a) {
   uint8_t x = gf16_precomp_log[a];
   return gf16_precomp_antilog[0x0f - x];
 #endif
+
+return 0;
 }
 
 /* modular inverse by computation */

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 #include "os/lib/random.h"
 #include "./params.h"
 #include "./rnc.h"
@@ -45,6 +46,7 @@ void gf_vec_dot_matrix(uint8_t *res, uint8_t *vec, uint8_t **mat, uint8_t row, u
 void gf_print_byte(char *c, uint8_t b);
 void gf_vec_print(char *c, uint8_t *vec, uint8_t dim);
 void gf_matrix_print(char *c, uint8_t **mat, uint8_t dim_r, uint8_t dim_c);
+uint8_t gf_matrix_rank(uint8_t **A, uint8_t n);
 
 /* unused functions
 

@@ -43,6 +43,8 @@
 #ifndef NODE_ID_H_
 #define NODE_ID_H_
 
+#include "stdint.h"
+
 /* A global variable that hosts the node ID */
 extern uint16_t node_id;
 /**

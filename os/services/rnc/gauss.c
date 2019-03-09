@@ -3,7 +3,8 @@ SEEMOO - Secure Mobile Networking Lab and Project, Winter 2017/18
 author: Jan Sturm
 */
 
-#include "./gf.h"
+#include "gf.h"
+
 
 void swap_row(uint8_t **A, uint8_t **b, uint8_t r1, uint8_t r2) {
 

@@ -6,7 +6,7 @@ author: Jan Sturm
 #ifndef RNC_GAUSS_H_
 #define RNC_GAUSS_H_
 
-#include "./util.h"
+#include "util.h"
 
 void swap_row(uint8_t **A, uint8_t **b, uint8_t r1, uint8_t r2);
 

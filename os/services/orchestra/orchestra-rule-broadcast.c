@@ -2,10 +2,8 @@
 #include "orchestra.h"
 #include "net/packetbuf.h"
 #include "sys/clock.h"
-#include "flooding.h"
-
-
-
+#include "os/services/rnc/rnc.h"
+#include "net/linkaddr.h"
 
 static uint16_t slotframe_handle = 0; 
 static uint16_t channel_offset = 0;  
@@ -18,16 +16,20 @@ static struct tsch_slotframe *sf_br;
 static int
 select_packet(uint16_t *slotframe, uint16_t *timeslot)
 {
-  
+  static struct broadcast_conn *connection; 
+  static const linkaddr_t *from ;
   if(packetbuf_attr(PACKETBUF_ATTR_FRAME_TYPE) == FRAME802154_DATAFRAME) { 
+	broadcast_recv(connection,from);
+		  
    if(slotframe != NULL){
       *slotframe = slotframe_handle;
 	   }
    if(timeslot != NULL){
 	  *timeslot = 0;
 	   }
+	   return 1; 
 	}
-	   return 1;
+	   return 0;
 
 }
 /*---------------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ init(uint16_t sf_handle)
 
 	//init_rnc();
 	//clock_wait(CLOCK_SECOND); /*here we should wait in order to let NC to be initialized by all nodes then starting it  */
-	start_flooding();
+	start_rnc();
 	
 }
 /*---------------------------------------------------------------------------*/

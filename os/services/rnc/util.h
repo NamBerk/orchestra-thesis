@@ -9,6 +9,7 @@ author: Jan Sturm
 #include <stdint.h>
 #include "random.h"
 #include "./params.h"
+#include "string.h"
 
 #ifdef DEBUG
 #define PRINT_DEBUG(...) printf(__VA_ARGS__)

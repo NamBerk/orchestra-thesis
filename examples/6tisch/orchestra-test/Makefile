@@ -8,7 +8,7 @@ MAKE_ROUTING = MAKE_ROUTING_RPL_CLASSIC
 
 MODULES += os/services/orchestra
 MODULES += os/services/shell
-MODULES += os/services/flooding
+MODULES += os/services/rnc
 
 #CONTIKI_WITH_RIME = 1
 
