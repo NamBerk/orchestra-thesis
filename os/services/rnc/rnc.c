@@ -192,7 +192,8 @@ void send_new_packet(void *bid) {
 
   print_rnc_packet("SINK INITIAL BROADCAST", &p); /////
   packetbuf_copyfrom(&p, sizeof(p));
-  broadcast_send(&broadcast);
+  NETSTACK_NETWORK.output(linkaddr_null);
+  //broadcast_send(&broadcast);
 
   /* K packets in one batch */
   if (counter_send_pkt < K) {
@@ -315,7 +316,8 @@ void rnc_send_nack(void *p) {
   PRINT_DEBUG("RNC BROADCAST - NACK\n");
   print_rnc_packet("RNC BROADCAST - NACK", &pkt_nack);
   packetbuf_copyfrom(&pkt_nack, sizeof(pkt_nack));
-  broadcast_send(&broadcast);
+  //broadcast_send(&broadcast);
+  NETSTACK_NETWORK.output(linkaddr_null);
   ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
 
   /* lazy NACK */
@@ -332,7 +334,8 @@ void rnc_send_nack_reply(void *p) {
     PRINT_DEBUG("RNC BROADCAST - NACK REPLY\n");
     print_rnc_packet("RNC BROADCAST - NACK REPLY", &pkt_nack_reply);
     packetbuf_copyfrom(&pkt_nack_reply, sizeof(pkt_nack_reply));
-    broadcast_send(&broadcast);
+	NETSTACK_NETWORK.output(linkaddr_null);
+    //broadcast_send(&broadcast);
   } else {
     PRINT_DEBUG("discarding NACK REPLY\n");
     nack_reply_received = 0;
@@ -342,7 +345,8 @@ void rnc_send_nack_reply(void *p) {
 void rnc_broadcast(void *p) {
   print_rnc_packet("RNC BROADCAST", &packet);
   packetbuf_copyfrom(&packet, sizeof(packet));
-  broadcast_send(&broadcast);
+  NETSTACK_NETWORK.output(linkaddr_null);
+  //broadcast_send(&broadcast);
   priority = 0;
 }
 
