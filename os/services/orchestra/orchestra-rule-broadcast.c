@@ -69,11 +69,10 @@ select_packet(uint16_t *slotframe, uint16_t *timeslot)
 static void
 init(uint16_t sf_handle)
 {
-	int i;
 	slotframe_handle = sf_handle;
 	channel_offset = sf_handle; // => 1 / look at the orchestra-conf.h for the order
 	sf_br = tsch_schedule_add_slotframe(slotframe_handle , ORCHESTRA_BROADCAST_PERIOD);
-	int rx_timeslot = get_node_timeslot(&linkaddr_node_addr);
+	
 	
     tsch_schedule_add_link(sf_br,
                          LINK_OPTION_TX,
