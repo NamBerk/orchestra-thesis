@@ -53,7 +53,7 @@ PROCESS_THREAD(udp_client_process, ev, data)
   simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
                       UDP_SERVER_PORT, udp_rx_callback);
 					  
-	init_rnc();
+	//init_rnc();
 
   etimer_set(&periodic_timer, SEND_INTERVAL);
   while(1) {

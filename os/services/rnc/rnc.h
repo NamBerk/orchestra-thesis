@@ -10,11 +10,12 @@ author: Jan Sturm
 #include <stdio.h>
 
 #include "sys/node-id.h"
-#include "os/net/rime/rime.h"
+//#include "os/net/rime/rime.h"
 
 #include "./gf.h"
 #include "./util.h"
 #include "./params.h"
+#include "net/ipv6/simple-udp.h" 
 
 struct rnc_pkt {
 	uint8_t payload[M];
@@ -22,8 +23,17 @@ struct rnc_pkt {
 	uint8_t coeff[K];
 	uint8_t msg_type;
 };
-struct broadcast_conn;
-void broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from);
+
+/*struct broadcast_conn{
+	const struct broadcast_callbacks *cb;
+	};
+struct broadcast_callbacks{
+	void(*recv)(struct simple_udp_connection *ptr , const linkaddr_t * sender);
+		};
+*/
+
+
+void receiver(struct uip_udp_conn *c, const linkaddr_t *from);
 void init_rnc(void);
 void start_rnc(void);
 void generate_init_coeffs(uint8_t dia);

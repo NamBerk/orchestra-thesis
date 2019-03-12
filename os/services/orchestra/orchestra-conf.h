@@ -46,7 +46,7 @@
  * - a sender-based or receiver-based slotframe for unicast to RPL parents and children
  * - a common shared slotframe for any other traffic (mostly broadcast)
  *  */
-#define ORCHESTRA_RULES { &eb_per_time_source, &broadcast, &unicast_per_neighbor_rpl_storing, &default_common,  }
+#define ORCHESTRA_RULES { &eb_per_time_source, &unicast_per_neighbor_rpl_storing, &default_common,  &broadcast }
 /* Example configuration for RPL non-storing mode: */
 /* #define ORCHESTRA_RULES { &eb_per_time_source, &unicast_per_neighbor_rpl_ns, &default_common } */
 
@@ -69,7 +69,7 @@
 #ifdef ORCHESTRA_CONF_UNICAST_PERIOD
 #define ORCHESTRA_UNICAST_PERIOD                  ORCHESTRA_CONF_UNICAST_PERIOD
 #else /* ORCHESTRA_CONF_UNICAST_PERIOD */
-#define ORCHESTRA_UNICAST_PERIOD                  17
+#define ORCHESTRA_UNICAST_PERIOD                  47
 #endif /* ORCHESTRA_CONF_UNICAST_PERIOD */
 
 /*---------------------------------------------------------------------------------------*/
