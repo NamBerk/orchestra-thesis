@@ -43,7 +43,7 @@ static uint8_t **packet_queue; // KxM
 static uint8_t **recovered;    // KxM
 
 #define UDP_CLIENT	8765
-#define UDP_SERVER_PORT	5678
+#define UDP_SERVER	5678
 
 /*
   indicates which packets are already received (encoded), one bit for each
@@ -150,7 +150,7 @@ void init_rnc(void) { // should be altered according to my implementation
   
   PRINT_DEBUG("id: %u, mode: %u\n", node_id, mode);
 
-	udp_broadcast_new(UDP_CLIENT,NULL);
+	udp_broadcast_new(UDP_SERVER,NULL);
 	//simple_udp_register(&broadcast_connection,UDP_SERVER,NULL,UDP_CLIENT,broadcast_recv);
   //broadcast_open(&broadcast, 111, &broadcast_call);
 }
@@ -201,7 +201,8 @@ void send_new_packet(void *bid) {
   packetbuf_copyfrom(&p, sizeof(p));
   //broadcast_send(&broadcast);
   //simple_udp_sendto(&broadcast_connection, str, strlen(str), &linkaddr_null);
-  NETSTACK_MAC.send(NULL,NULL);
+  NETSTACK_NETWORK.output(&linkaddr_null);
+  //NETSTACK_MAC.send(NULL,NULL);
 
   /* K packets in one batch */
   if (counter_send_pkt < K) {
@@ -325,8 +326,8 @@ void rnc_send_nack(void *p) {
   print_rnc_packet("RNC BROADCAST - NACK", &pkt_nack);
   packetbuf_copyfrom(&pkt_nack, sizeof(pkt_nack));
   //broadcast_send(&broadcast);
-  //NETSTACK_NETWORK.output(&linkaddr_null);
-  NETSTACK_MAC.send(NULL,NULL);
+  NETSTACK_NETWORK.output(&linkaddr_null);
+ // NETSTACK_MAC.send(NULL,NULL);
   ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
 
   /* lazy NACK */
@@ -343,9 +344,9 @@ void rnc_send_nack_reply(void *p) {
     PRINT_DEBUG("RNC BROADCAST - NACK REPLY\n");
     print_rnc_packet("RNC BROADCAST - NACK REPLY", &pkt_nack_reply);
     packetbuf_copyfrom(&pkt_nack_reply, sizeof(pkt_nack_reply));
-	//NETSTACK_NETWORK.output(&linkaddr_null);
+	NETSTACK_NETWORK.output(&linkaddr_null);
     //broadcast_send(&broadcast);
-	NETSTACK_MAC.send(NULL,NULL);
+	//NETSTACK_MAC.send(NULL,NULL);
   } else {
     PRINT_DEBUG("discarding NACK REPLY\n");
     nack_reply_received = 0;
@@ -355,9 +356,9 @@ void rnc_send_nack_reply(void *p) {
 void rnc_broadcast(void *p) {
   print_rnc_packet("RNC BROADCAST", &packet);
   packetbuf_copyfrom(&packet, sizeof(packet));
-  //NETSTACK_NETWORK.output(&linkaddr_null);
+  NETSTACK_NETWORK.output(&linkaddr_null);
  // broadcast_send(&broadcast);
- NETSTACK_MAC.send(NULL,NULL);
+ //NETSTACK_MAC.send(NULL,NULL);
   priority = 0;
 }
 

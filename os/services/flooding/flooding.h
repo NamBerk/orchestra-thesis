@@ -10,10 +10,11 @@ author: Jan Sturm
 #include <stdio.h>
 
 #include "sys/node-id.h"
-#include "os/net/rime/rime.h"
-#include "./params.h"
-#include "./gf.h"
-#include "./util.h"
+//#include "os/net/rime/rime.h"
+#include "params.h"
+#include "gf.h"
+#include "util.h"
+#include "net/ipv6/tcpip.h"
 
 
 struct flooding_pkt {
@@ -23,7 +24,7 @@ struct flooding_pkt {
 	uint8_t msg_type;
 };
 
-void broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from);
+void receiver(struct uip_udp_conn *c, const linkaddr_t *from);
 void init_flooding(void);
 void start_flooding(void);
 

@@ -9,9 +9,16 @@ author: Jan Sturm
 #include "random.h"
 #include "sys/ctimer.h"
 #include <stdlib.h>
+#include "net/ipv6/tcpip.h"
+#include "net/linkaddr.h"
+#include "net/packetbuf.h"
+#include "net/mac/tsch/tsch.h"
 #ifdef LEDS
 #include "leds.h"
 #endif
+
+#define UDP_CLIENT	8765
+#define UDP_SERVER	5678
 
 /* mode can be set in params.h */
 static uint8_t mode;
@@ -45,10 +52,10 @@ static uint8_t nack_reply_received = 0;
 
 struct flooding_pkt pkt_nack_reply;
 
-static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
-static struct broadcast_conn broadcast;
+/*static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
+static struct broadcast_conn broadcast;*/
 
-void broadcast_recv(struct broadcast_conn *c, const linkaddr_t *from) {
+void receiver(struct uip_udp_conn *c, const linkaddr_t *from) {
 
   if (mode != MODE_SINK && !check_recovered()) {
     ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), flooding_send_nack,
@@ -136,8 +143,9 @@ void init_flooding(void) {
   }
 
   PRINT_DEBUG("id: %u, mode: %u\n", node_id, mode);
+  udp_broadcast_new(UDP_SERVER,NULL);
 
-  broadcast_open(&broadcast, 111, &broadcast_call);
+  //broadcast_open(&broadcast, 111, &broadcast_call);
 }
 
 void start_flooding(void) {
@@ -183,8 +191,8 @@ void send_new_packet(void *bid) {
   gf_vec_print("   data", p.payload, M);
 
   packetbuf_copyfrom(&p, sizeof(p));
-  broadcast_send(&broadcast);
-
+  //broadcast_send(&broadcast);
+NETSTACK_NETWORK.output(&tsch_broadcast_address);
   /* K packets in one batch */
   if (counter_send_pkt < K) {
     ctimer_reset(&timer_packet);
@@ -251,7 +259,8 @@ void flooding_send_nack(void *p) {
   PRINT_DEBUG("FLOODING BROADCAST - NACK\n");
   print_flooding_packet("FLOODING BROADCAST - NACK", &pkt_nack);
   packetbuf_copyfrom(&pkt_nack, sizeof(pkt_nack));
-  broadcast_send(&broadcast);
+  //broadcast_send(&broadcast);
+  NETSTACK_NETWORK.output(&tsch_broadcast_address);
   ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), flooding_send_nack,
              NULL);
   nack_multiplier *= 2;
@@ -265,7 +274,8 @@ void flooding_send_nack_reply(void *p) {
     PRINT_DEBUG("FLOODING BROADCAST - NACK REPLY\n");
     print_flooding_packet("FLOODING BROADCAST - NACK REPLY", &pkt_nack_reply);
     packetbuf_copyfrom(&pkt_nack_reply, sizeof(pkt_nack_reply));
-    broadcast_send(&broadcast);
+    //broadcast_send(&broadcast);
+	NETSTACK_NETWORK.output(&tsch_broadcast_address);
   } else {
     PRINT_DEBUG("discarding NACK REPLY\n");
     nack_reply_received = 0;
@@ -275,7 +285,8 @@ void flooding_send_nack_reply(void *p) {
 void flooding_broadcast(void *p) {
   print_flooding_packet("FLOODING BROADCAST", &packet);
   packetbuf_copyfrom(&packet, sizeof(packet));
-  broadcast_send(&broadcast);
+  NETSTACK_NETWORK.output(&tsch_broadcast_address);
+  //broadcast_send(&broadcast);
   priority = 0;
 }
 

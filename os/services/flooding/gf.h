@@ -10,8 +10,8 @@ author: Jan Sturm
 #include <stdio.h>
 
 #include "random.h"
-#include "./params.h"
-#include "./util.h"
+#include "params.h"
+#include "util.h"
 
 #define GF_MOD(a) ((a) & (GF - 1))
 

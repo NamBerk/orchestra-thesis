@@ -1,10 +1,10 @@
 #include "contiki.h"
 #include "orchestra.h"
 #include "net/packetbuf.h"
-#include "os/services/rnc/rnc.h"
+//#include "os/services/rnc/rnc.h"
 #include "net/linkaddr.h"
 #include "net/ipv6/uip-udp-packet.h"
-#include "os/services/rnc/rnc.h"
+#include "os/services/flooding/flooding.h"
 #include "net/ipv6/tcpip.h"
 
 static uint16_t slotframe_handle = 0; 
@@ -21,7 +21,7 @@ static char buf[MAX_PAYLOAD_LEN];*/
 static void
 broad_send(void)
 {
-	start_rnc();
+	start_flooding();
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -29,11 +29,8 @@ broad_receive()
 {
   static struct uip_udp_conn *connection ;
   connection = udp_broadcast_new(UIP_HTONS(8765) ,NULL);
-  
-   //struct rnc_pkt *p_recv = (struct rnc_pkt *)packetbuf_dataptr();
   const linkaddr_t *from;
   from = (const linkaddr_t *)PACKETBUF_ADDR_SENDER;
- // packetbuf_set_addr(PACKETBUF_ADDR_SENDER, (const linkaddr_t *)from);
   receiver(connection, from);
 	
 }
@@ -72,19 +69,18 @@ select_packet(uint16_t *slotframe, uint16_t *timeslot)
 static void
 init(uint16_t sf_handle)
 {
-	int i;
+	//int i;
 	
 	slotframe_handle = sf_handle;
 	channel_offset = sf_handle; // => 1 / look at the orchestra-conf.h for the order
 	sf_br = tsch_schedule_add_slotframe(slotframe_handle , ORCHESTRA_BROADCAST_PERIOD);
-	//int r[ORCHESTRA_BROADCAST_PERIOD-10];
-	for(i=0; i < ORCHESTRA_BROADCAST_PERIOD-10;i++){
+	//for(i=0; i < ORCHESTRA_BROADCAST_PERIOD-10;i++){
     tsch_schedule_add_link(sf_br,
                          LINK_OPTION_TX,
                          LINK_TYPE_NORMAL, &tsch_broadcast_address,
-                         i, channel_offset);
+                         get_node_timeslot(&linkaddr_node_addr), channel_offset);
 	
-	}
+	//}
   
 	broad_send();
 	
