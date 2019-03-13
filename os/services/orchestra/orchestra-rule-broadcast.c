@@ -31,8 +31,9 @@ broad_receive()
   connection = udp_broadcast_new(UIP_HTONS(8765) ,NULL);
   
    //struct rnc_pkt *p_recv = (struct rnc_pkt *)packetbuf_dataptr();
-  
-  packetbuf_set_addr(PACKETBUF_ADDR_SENDER, (const linkaddr_t *)from);
+  const linkaddr_t *from;
+  from = (const linkaddr_t *)PACKETBUF_ADDR_SENDER;
+ // packetbuf_set_addr(PACKETBUF_ADDR_SENDER, (const linkaddr_t *)from);
   receiver(connection, from);
 	
 }
@@ -41,8 +42,10 @@ static
 uint16_t get_node_timeslot(const linkaddr_t *addr)
 {
 	
+	
     if (ORCHESTRA_BROADCAST_PERIOD > 0){
-		return ORCHESTRA_LINKADDR_HASH(addr); 
+        return ORCHESTRA_LINKADDR_HASH(addr);
+		  
 	 }else
 		 return 0xffff;
 	
@@ -69,15 +72,19 @@ select_packet(uint16_t *slotframe, uint16_t *timeslot)
 static void
 init(uint16_t sf_handle)
 {
+	int i;
+	
 	slotframe_handle = sf_handle;
 	channel_offset = sf_handle; // => 1 / look at the orchestra-conf.h for the order
 	sf_br = tsch_schedule_add_slotframe(slotframe_handle , ORCHESTRA_BROADCAST_PERIOD);
-	
-	
+	//int r[ORCHESTRA_BROADCAST_PERIOD-10];
+	for(i=0; i < ORCHESTRA_BROADCAST_PERIOD-10;i++){
     tsch_schedule_add_link(sf_br,
                          LINK_OPTION_TX,
                          LINK_TYPE_NORMAL, &tsch_broadcast_address,
-                         get_node_timeslot(&linkaddr_node_addr), channel_offset);
+                         i, channel_offset);
+	
+	}
   
 	broad_send();
 	
