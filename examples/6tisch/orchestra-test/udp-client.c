@@ -5,7 +5,7 @@
 #include "net/ipv6/simple-udp.h"
 #include "project-conf.h"
 #include "orchestra.h"
-#include "os/services/flooding/flooding.h"
+#include "os/services/rnc/rnc.h"
 
 #include "sys/log.h"
 #define LOG_MODULE "App"
@@ -53,7 +53,7 @@ PROCESS_THREAD(udp_client_process, ev, data)
   simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
                       UDP_SERVER_PORT, udp_rx_callback);
 					  
-	init_flooding();
+	init_rnc();
 
   etimer_set(&periodic_timer, SEND_INTERVAL);
   while(1) {

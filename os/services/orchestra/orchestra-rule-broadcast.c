@@ -4,7 +4,7 @@
 //#include "os/services/rnc/rnc.h"
 #include "net/linkaddr.h"
 #include "net/ipv6/uip-udp-packet.h"
-#include "os/services/flooding/flooding.h"
+#include "os/services/rnc/rnc.h"
 #include "net/ipv6/tcpip.h"
 
 static uint16_t slotframe_handle = 0; 
@@ -21,27 +21,27 @@ static char buf[MAX_PAYLOAD_LEN];*/
 static void
 broad_send(void)
 {
-	start_flooding();
+	start_rnc();
 }
 /*---------------------------------------------------------------------------*/
 static void
 broad_receive()
 {
   static struct uip_udp_conn *connection ;
-  connection = udp_broadcast_new(UIP_HTONS(8765) ,NULL);
+  connection = udp_broadcast_new(UIP_HTONS(5678) ,NULL); //5678 server port
   const linkaddr_t *from;
-  from = (const linkaddr_t *)PACKETBUF_ADDR_SENDER;
+  from = (const linkaddr_t *)packetbuf_addr(PACKETBUF_ADDR_SENDER);
   receiver(connection, from);
 	
 }
 /*---------------------------------------------------------------------------*/
 static
-uint16_t get_node_timeslot(const linkaddr_t *addr)
+uint16_t get_node_timeslot(const linkaddr_t * addr)
 {
 	
 	
     if (ORCHESTRA_BROADCAST_PERIOD > 0){
-        return ORCHESTRA_LINKADDR_HASH(addr);
+        return ORCHESTRA_LINKADDR_HASH(addr) ;
 		  
 	 }else
 		 return 0xffff;
