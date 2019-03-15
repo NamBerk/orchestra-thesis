@@ -461,6 +461,17 @@ tsch_rx_process_pending()
     int is_eb = ret
       && frame.fcf.frame_version == FRAME802154_IEEE802154_2015
       && frame.fcf.frame_type == FRAME802154_BEACONFRAME;
+      
+      /*int is_broad = ret && frame.fcf.frame_type == FRAME802154_BROADFRAME;
+       
+      if(is_broad){
+      packetbuf_copyfrom(current_input->payload, current_input->len);
+      packetbuf_set_attr(PACKETBUF_ATTR_CHANNEL, current_input->channel);
+}
+
+     
+
+*/
 
     if(is_data) {
       /* Skip EBs and other control messages */
@@ -470,7 +481,7 @@ tsch_rx_process_pending()
       packetbuf_set_attr(PACKETBUF_ATTR_CHANNEL, current_input->channel);
     }
 
-    if(is_data) {
+    if(is_data || is_broad) {///////////
       /* Pass to upper layers */
       packet_input();
     } else if(is_eb) {
@@ -1036,6 +1047,7 @@ send_packet(mac_callback_t sent, void *ptr)
   }
 
   packetbuf_set_attr(PACKETBUF_ATTR_FRAME_TYPE, FRAME802154_DATAFRAME);
+  //packetbuf_set_addr(PACKETBUF_ATTR_FRAME_TYPE, FRAME802154_BROADFRAME);
 
 #if LLSEC802154_ENABLED
   if(tsch_is_pan_secured) {

@@ -35,7 +35,7 @@
  *         Fredrik Osterlind <fros@sics.se>
  */
 
-#include <jni.h>
+#include "jni.h"
 #include <stdio.h>
 #include <string.h>
 
