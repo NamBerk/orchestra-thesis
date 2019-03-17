@@ -462,7 +462,7 @@ tsch_rx_process_pending()
       && frame.fcf.frame_version == FRAME802154_IEEE802154_2015
       && frame.fcf.frame_type == FRAME802154_BEACONFRAME;
       
-      /*int is_broad = ret && frame.fcf.frame_type == FRAME802154_BROADFRAME;
+      int is_broad = ret && frame.fcf.frame_type == FRAME802154_BROADFRAME;
        
       if(is_broad){
       packetbuf_copyfrom(current_input->payload, current_input->len);
@@ -471,7 +471,7 @@ tsch_rx_process_pending()
 
      
 
-*/
+
 
     if(is_data) {
       /* Skip EBs and other control messages */
