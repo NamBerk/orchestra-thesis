@@ -12,6 +12,8 @@ author: Jan Sturm
 #include <stdlib.h>
 #include "net/linkaddr.h"
 #include "net/packetbuf.h"
+#include "stdio.h"
+#include "os/sys/node-id.h"
 
 #ifdef LEDS
 #include "leds.h"
@@ -27,11 +29,11 @@ static uint8_t local_batch_id = 0;
 static struct ctimer timer_batch;
 static struct ctimer timer_packet;
 static struct ctimer timer_send;
-static struct ctimer timer_nack;
-static struct ctimer timer_nack_reply;
+//static struct ctimer timer_nack;
+//static struct ctimer timer_nack_reply;
 
 /* for lazy NACK */
-static uint8_t nack_multiplier = 1;
+//static uint8_t nack_multiplier = 1;
 
 // count how much the source already sent in one batch
 static uint8_t counter_send_pkt = 0;
@@ -56,22 +58,28 @@ static uint8_t seen_packets = 0;
 static uint8_t priority = 0;
 
 /* indicates if a NACK_REPLY message was already received */
-static uint8_t nack_reply_received = 0;
+//static uint8_t nack_reply_received = 0;
 
 //static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
-//static struct simple_udp_connection broadcast_connection;
-void receiver(struct uip_udp_conn *c , const linkaddr_t *from)
+
+//static struct uip_udp_conn udp_conn;
+//static struct broadcast_callback current_callback = {receiver};
+
+
+void receiver(const void *data, uint16_t len,
+  const linkaddr_t *from, const linkaddr_t *dest)
  { 
 	
-  if (mode != MODE_SINK && rank_coeff_matrix != FULL_RANK) { //
+  /*if (mode != MODE_SINK && rank_coeff_matrix != FULL_RANK) { //
     nack_multiplier = 1;
     ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
-  }
+  }*/
   struct rnc_pkt *p_recv = (struct rnc_pkt *)packetbuf_dataptr();
 
-  switch (p_recv->msg_type) {
-  case MESSAGE_TYPE_PAYLOAD:
-    if (mode != MODE_SINK) { //////////
+ // switch (p_recv->msg_type) {
+  //case MESSAGE_TYPE_PAYLOAD:
+    if (node_id == 1) { //////////
+	
 
       // only care for batch_ids greater/equal then oneself's
       if (local_batch_id <= p_recv->batch_id) {
@@ -83,10 +91,11 @@ void receiver(struct uip_udp_conn *c , const linkaddr_t *from)
         gf_vec_print("   --> coeffs", p_recv->coeff, K);
 
         process_data(p_recv);
+		printf("aaaaaaa \n");
       }
     }
-    break;
-
+    //break;
+/*
   case MESSAGE_TYPE_NACK:
     if (mode != MODE_SINK) {  ////////////
       PRINT_DEBUG("\nreceived NACK  (source: %d.%d)\n", from->u8[0],
@@ -113,7 +122,7 @@ void receiver(struct uip_udp_conn *c , const linkaddr_t *from)
     }
 
     break;
-  }
+  }*/
 }
 
 /*--------------------------------------------------------------------------------------------*/
@@ -151,13 +160,13 @@ void init_rnc(void) { // should be altered according to my implementation
   PRINT_DEBUG("id: %u, mode: %u\n", node_id, mode);
 
 	udp_broadcast_new(UDP_SERVER,NULL);
-	//simple_udp_register(&broadcast_connection,UDP_SERVER,NULL,UDP_CLIENT,broadcast_recv);
+	//simple_udp_register(udp_conn,UDP_SERVER,NULL,UDP_CLIENT,receiver);
   //broadcast_open(&broadcast, 111, &broadcast_call);
 }
 
 void start_rnc(void) {
 
-  if (mode == MODE_SINK) { /////
+  if (node_id == 1) { /////
     send_new_batch(NULL);
   }
 }
@@ -180,7 +189,7 @@ void send_new_packet(void *bid) {
 
   uint8_t i;
   struct rnc_pkt p;
-  p.msg_type = MESSAGE_TYPE_PAYLOAD;
+ // p.msg_type = MESSAGE_TYPE_PAYLOAD;
   p.batch_id = *(uint8_t *)bid;
   for (i = 0; i < M; i++) {
 #if GF == 2
@@ -217,10 +226,10 @@ void generate_init_coeffs(uint8_t dia) {
 }
 
 void process_data(struct rnc_pkt *p_recv) {
-
+printf("data \n");
   if (local_batch_id < p_recv->batch_id) {
     if (rank_coeff_matrix != FULL_RANK &&
-        (mode == MODE_SOURCE )){ // || mode == MODE_RELAY_PLUS_SINK
+        (node_id == 7 || node_id == 6 )){ // || mode == MODE_RELAY_PLUS_SINK
       printf("ERROR  --> batch %u not recovered\n", local_batch_id);
     }
     local_batch_id = p_recv->batch_id;
@@ -255,7 +264,7 @@ void process_data(struct rnc_pkt *p_recv) {
 
     print_lse(coeff_matrix, recovered, packet_queue);
 
-    if (mode == MODE_RELAY || mode == MODE_RELAY_PLUS_SINK) {
+    if (mode == MODE_RELAY /*|| mode == MODE_RELAY_PLUS_SINK*/) {
       if (rank_old < rank_coeff_matrix) {
         /* received new information, share them */
         rnc_send_pkt_delay(p_recv->batch_id);
@@ -263,7 +272,7 @@ void process_data(struct rnc_pkt *p_recv) {
     }
 
     if (rank_coeff_matrix == FULL_RANK) {
-      if (mode == MODE_SOURCE ) { ///////|| mode == MODE_RELAY_PLUS_SINK
+      if (node_id == 7 || node_id == 6 ) { ///////|| mode == MODE_RELAY_PLUS_SINK
 #if GF != 2
         if (check_data(recovered)) {
           printf("--> REC SUCCESSFULL (batch-id= %d)\n", local_batch_id);
@@ -280,7 +289,7 @@ void process_data(struct rnc_pkt *p_recv) {
         print_batch("recovered", recovered, local_batch_id);
       }
 
-      ctimer_stop(&timer_nack);
+      //ctimer_stop(&timer_nack);
     }
   }
 }
@@ -298,22 +307,22 @@ void rnc_generate_payload(struct rnc_pkt *p, uint8_t batch_id) {
 static struct rnc_pkt packet;
 void rnc_send_pkt_delay(uint8_t batch_id) {
 
-  packet.msg_type = MESSAGE_TYPE_PAYLOAD;
+  //packet.msg_type = MESSAGE_TYPE_PAYLOAD;
   rnc_generate_payload(&packet, batch_id);
   ctimer_set(&timer_send, DELAY_RNC_PKT(priority), rnc_broadcast, NULL);
   ++priority;
 }
 
-void rnc_send_nack(void *p) {
+/*void rnc_send_nack(void *p) {
 
   // TODO use separate struct --> not implemented in this lab
   struct rnc_pkt pkt_nack;
   pkt_nack.msg_type = MESSAGE_TYPE_NACK;
   pkt_nack.batch_id = local_batch_id;
 
-  /* indicate which packets are missing
+   indicate which packets are missing
      --> store it in first coefficient
-  */
+  
   pkt_nack.coeff[0] = 0x00;
   uint8_t i;
   for (i = 0; i < K; i++) {
@@ -330,12 +339,13 @@ void rnc_send_nack(void *p) {
  // NETSTACK_MAC.send(NULL,NULL);
   ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
 
-  /* lazy NACK */
+   lazy NACK 
   nack_multiplier *= 2;
 }
-
+ */
+/*
 void rnc_send_nack_reply(void *p) {
-  /* only send NACK-REPLY if nobody else sent one so far */
+   only send NACK-REPLY if nobody else sent one so far 
   if (!nack_reply_received) {
     struct rnc_pkt pkt_nack_reply;
     pkt_nack_reply.msg_type = MESSAGE_TYPE_NACK_REPLY;
@@ -351,7 +361,7 @@ void rnc_send_nack_reply(void *p) {
     PRINT_DEBUG("discarding NACK REPLY\n");
     nack_reply_received = 0;
   }
-}
+}*/
 
 void rnc_broadcast(void *p) {
   print_rnc_packet("RNC BROADCAST", &packet);

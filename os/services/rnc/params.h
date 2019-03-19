@@ -52,7 +52,7 @@ author: Jan Sturm
 #define MODE_SOURCE 0
 #define MODE_RELAY 1
 #define MODE_SINK 2
-#define MODE_RELAY_PLUS_SINK 3
+//#define MODE_RELAY_PLUS_SINK 3
 
 #define MESSAGE_TYPE_PAYLOAD 0
 #define MESSAGE_TYPE_NACK 1

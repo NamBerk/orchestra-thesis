@@ -15,32 +15,27 @@ author: Jan Sturm
 #include "./gf.h"
 #include "./util.h"
 #include "./params.h"
-#include "net/ipv6/simple-udp.h" 
+#include "net/ipv6/tcpip.h" 
+#include "net/ipv6/simple-udp.h"
 
 struct rnc_pkt {
 	uint8_t payload[M];
 	uint8_t batch_id;
 	uint8_t coeff[K];
-	uint8_t msg_type;
+	//uint8_t msg_type;
 };
 
-/*struct broadcast_conn{
-	const struct broadcast_callbacks *cb;
-	};
-struct broadcast_callbacks{
-	void(*recv)(struct simple_udp_connection *ptr , const linkaddr_t * sender);
-		};
-*/
 
 
-void receiver(struct uip_udp_conn *c, const linkaddr_t *from);
+void receiver(const void *data, uint16_t len,
+  const linkaddr_t *from, const linkaddr_t *dest);
 void init_rnc(void);
 void start_rnc(void);
 void generate_init_coeffs(uint8_t dia);
 void rnc_generate_payload(struct rnc_pkt *p, uint8_t batch_id);
 void rnc_send_pkt_delay(uint8_t batch_id);
-void rnc_send_nack(void *p);
-void rnc_send_nack_reply(void *p);
+//void rnc_send_nack(void *p);
+//void rnc_send_nack_reply(void *p);
 void rnc_broadcast(void *p);
 void send_new_batch(void *ptr);
 void send_new_packet(void *bid);

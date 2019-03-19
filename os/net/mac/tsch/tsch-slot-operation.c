@@ -795,7 +795,7 @@ PT_THREAD(tsch_rx_slot(struct pt *pt, struct rtimer *t))
 
         if(frame_valid) {
           if(frame.fcf.frame_type != FRAME802154_DATAFRAME
-            && frame.fcf.frame_type != FRAME802154_BEACONFRAME) {
+            && frame.fcf.frame_type != FRAME802154_BEACONFRAME && frame.fcf.frame_type != FRAME802154_BROADFRAME) {
               TSCH_LOG_ADD(tsch_log_message,
                   snprintf(log->message, sizeof(log->message),
                   "!discarding frame with type %u, len %u", frame.fcf.frame_type, current_input->len));
