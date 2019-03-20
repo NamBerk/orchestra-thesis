@@ -99,10 +99,11 @@ frame-filtering-friendly on some platforms) */
  *  @{
  */
 #define FRAME802154_BEACONFRAME     (0x00)
+#define FRAME802154_BROADFRAME      (0x04)
 #define FRAME802154_DATAFRAME       (0x01)
 #define FRAME802154_ACKFRAME        (0x02)
 #define FRAME802154_CMDFRAME        (0x03)
-#define FRAME802154_BROADFRAME      (0x04)
+
 
 
 #define FRAME802154_BEACONREQ       (0x07)

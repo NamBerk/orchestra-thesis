@@ -14,6 +14,7 @@ author: Jan Sturm
 #include "net/packetbuf.h"
 #include "stdio.h"
 #include "os/sys/node-id.h"
+#include "net/ipv6/tcpip.h"
 
 #ifdef LEDS
 #include "leds.h"
@@ -78,7 +79,7 @@ void receiver(const void *data, uint16_t len,
 
  // switch (p_recv->msg_type) {
   //case MESSAGE_TYPE_PAYLOAD:
-    if (node_id == 1) { //////////
+    if (node_id != 1) { //////////
 	
 
       // only care for batch_ids greater/equal then oneself's
@@ -91,7 +92,7 @@ void receiver(const void *data, uint16_t len,
         gf_vec_print("   --> coeffs", p_recv->coeff, K);
 
         process_data(p_recv);
-		printf("aaaaaaa \n");
+		//printf("aaaaaaa \n");
       }
     }
     //break;
@@ -158,8 +159,8 @@ void init_rnc(void) { // should be altered according to my implementation
   }
   
   PRINT_DEBUG("id: %u, mode: %u\n", node_id, mode);
-
-	udp_broadcast_new(UDP_SERVER,NULL);
+	struct uip_udp_conn *udp_conn=udp_broadcast_new(UDP_SERVER, NULL);
+	udp_bind(udp_conn,UDP_SERVER);
 	//simple_udp_register(udp_conn,UDP_SERVER,NULL,UDP_CLIENT,receiver);
   //broadcast_open(&broadcast, 111, &broadcast_call);
 }
@@ -226,8 +227,9 @@ void generate_init_coeffs(uint8_t dia) {
 }
 
 void process_data(struct rnc_pkt *p_recv) {
-printf("data \n");
+
   if (local_batch_id < p_recv->batch_id) {
+	  
     if (rank_coeff_matrix != FULL_RANK &&
         (node_id == 7 || node_id == 6 )){ // || mode == MODE_RELAY_PLUS_SINK
       printf("ERROR  --> batch %u not recovered\n", local_batch_id);

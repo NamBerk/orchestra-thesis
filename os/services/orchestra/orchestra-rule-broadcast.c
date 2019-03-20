@@ -12,8 +12,7 @@
 static uint16_t slotframe_handle = 0;
 static uint16_t channel_offset = 0;
 static struct tsch_slotframe *sf_br;
-static 
-broadcast_input_callback current_callback = NULL;
+static broadcast_input_callback current_callback = NULL;
 /*#define MAX_PAYLOAD_LEN 120
 static struct uip_udp_conn * bcast_conn;
 static char buf[MAX_PAYLOAD_LEN];*/
@@ -28,12 +27,13 @@ void broadcast_set_input_callback(broadcast_input_callback callback){
 /*---------------------------------------------------------------------------*/
 static void
 broad_send(void) {
+	
 	start_rnc();
 }
 /*---------------------------------------------------------------------------*/
 static void
 broad_receive() {
-	broadcast_set_input_callback(receiver);
+	
   if(current_callback != NULL) {
     current_callback(packetbuf_dataptr(), packetbuf_datalen(),
       packetbuf_addr(PACKETBUF_ADDR_SENDER), packetbuf_addr(PACKETBUF_ADDR_RECEIVER));
@@ -46,7 +46,7 @@ uint16_t get_node_timeslot(const linkaddr_t * addr) {
 
 
 	if (ORCHESTRA_BROADCAST_PERIOD > 0) {
-		return ORCHESTRA_LINKADDR_HASH(addr) ;
+		return (ORCHESTRA_LINKADDR_HASH(addr+3)) ;
 
 	} else
 		return 0xffff;
@@ -81,12 +81,12 @@ init(uint16_t sf_handle) {
 	sf_br = tsch_schedule_add_slotframe(slotframe_handle , ORCHESTRA_BROADCAST_PERIOD);
 	//for(i=0; i < ORCHESTRA_BROADCAST_PERIOD-10;i++){
 	tsch_schedule_add_link(sf_br,
-	                       LINK_OPTION_TX|LINK_OPTION_RX|LINK_OPTION_SHARED,
+	                       LINK_OPTION_TX,
 	                       LINK_TYPE_NORMAL, &tsch_broadcast_address,
 	                       get_node_timeslot(&linkaddr_node_addr), channel_offset);
 
 	//}
-
+	broadcast_set_input_callback(receiver);
 	broad_send();
 
 
