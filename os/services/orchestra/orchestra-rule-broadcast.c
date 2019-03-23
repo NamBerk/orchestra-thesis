@@ -38,8 +38,8 @@ static
 uint16_t get_node_timeslot(const linkaddr_t * addr) {
 
 
-	if (ORCHESTRA_BROADCAST_PERIOD > 0) {
-		return (ORCHESTRA_LINKADDR_HASH(addr)+10) ;
+	if (addr != NULL && ORCHESTRA_BROADCAST_PERIOD > 0) {
+		return (ORCHESTRA_LINKADDR_HASH(addr)) ;
 
 	} else
 		return 0xffff;
@@ -49,7 +49,8 @@ uint16_t get_node_timeslot(const linkaddr_t * addr) {
 static int
 select_packet(uint16_t *slotframe, uint16_t *timeslot) {
 
-	if(packetbuf_attr(PACKETBUF_ATTR_FRAME_TYPE) == FRAME802154_DATAFRAME) {
+	
+	if(packetbuf_attr(PACKETBUF_ATTR_FRAME_TYPE) == FRAME802154_BROADFRAME) {
 		broad_receive();
 
 		if(slotframe != NULL) {

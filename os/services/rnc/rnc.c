@@ -76,7 +76,7 @@ void receiver(const void *data, uint16_t len,
     nack_multiplier = 1;
     ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
   }*/
-  struct rnc_pkt *p_recv = (struct rnc_pkt *)packetbuf_dataptr();
+  struct tsch_packet *p_recv = (struct tsch_packet *)packetbuf_dataptr();
 
  // switch (p_recv->msg_type) {
   //case MESSAGE_TYPE_PAYLOAD:
@@ -190,7 +190,7 @@ static uint8_t local_packet = 0x00;
 void send_new_packet(void *bid) {
 
   uint8_t i;
-  struct rnc_pkt p;
+  struct tsch_packet p;
  // p.msg_type = MESSAGE_TYPE_PAYLOAD;
   p.batch_id = *(uint8_t *)bid;
   for (i = 0; i < M; i++) {
@@ -228,7 +228,7 @@ void generate_init_coeffs(uint8_t dia) {
   coeff_matrix[dia][dia] = 0x01;
 }
 
-void process_data(struct rnc_pkt *p_recv) {
+void process_data(struct tsch_packet *p_recv) {
 
   if (local_batch_id < p_recv->batch_id) {
 	  
@@ -299,7 +299,7 @@ void process_data(struct rnc_pkt *p_recv) {
 }
 
 /* generate a random linear combination of all packets in the packet_queue */
-void rnc_generate_payload(struct rnc_pkt *p, uint8_t batch_id) {
+void rnc_generate_payload(struct tsch_packet *p, uint8_t batch_id) {
 
   p->batch_id = batch_id;
   uint8_t b[K];
@@ -308,7 +308,7 @@ void rnc_generate_payload(struct rnc_pkt *p, uint8_t batch_id) {
   gf_vec_dot_matrix(p->coeff, b, coeff_matrix, K, K);
 }
 
-static struct rnc_pkt packet;
+static struct tsch_packet packet;
 void rnc_send_pkt_delay(uint8_t batch_id) {
 
   //packet.msg_type = MESSAGE_TYPE_PAYLOAD;
@@ -378,7 +378,7 @@ void rnc_broadcast(void *p) {
 }
 
 // returns index where packet was stored
-uint8_t store_coeffs_and_payload(struct rnc_pkt *p_recv) {
+uint8_t store_coeffs_and_payload(struct tsch_packet *p_recv) {
 
   /* how many leading zeros the coefficient vector contains */
   uint8_t index_zero = get_zeros(p_recv->coeff, K);
@@ -473,7 +473,7 @@ void print_batch(const char *s, uint8_t **v, uint8_t id) {
   PRINT_DEMO("\n");
 }
 
-void print_rnc_packet(const char *s, struct rnc_pkt *p) {
+void print_rnc_packet(const char *s, struct tsch_packet *p) {
 
   PRINT_DEMO("--> %s (batch-id= %u)\n", s, p->batch_id);
   gf_vec_print("   data", p->payload, M);

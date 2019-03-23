@@ -67,112 +67,111 @@ static int log_active = 0;
 /*---------------------------------------------------------------------------*/
 /* Process pending log messages */
 void
-tsch_log_process_pending(void)
-{
-  static int last_log_dropped = 0;
-  int16_t log_index;
-  /* Loop on accessing (without removing) a pending input packet */
-  if(log_dropped != last_log_dropped) {
-    printf("[WARN: TSCH-LOG  ] logs dropped %u\n", log_dropped);
-    last_log_dropped = log_dropped;
-  }
-  while((log_index = ringbufindex_peek_get(&log_ringbuf)) != -1) {
-    struct tsch_log_t *log = &log_array[log_index];
-    if(log->link == NULL) {
-      printf("[INFO: TSCH-LOG  ] {asn %02x.%08lx link-NULL} ", log->asn.ms1b, log->asn.ls4b);
-    } else {
-      struct tsch_slotframe *sf = tsch_schedule_get_slotframe_by_handle(log->link->slotframe_handle);
-      printf("[INFO: TSCH-LOG  ] {asn %02x.%08lx link %2u %3u %3u %2u %2u ch %2u} ",
-             log->asn.ms1b, log->asn.ls4b,
-             log->link->slotframe_handle, sf ? sf->size.val : 0,
-             log->burst_count, log->link->timeslot + log->burst_count, log->link->channel_offset,
-             log->channel);
-    }
-    switch(log->type) {
-      case tsch_log_tx:
-        printf("%s-%u-%u tx ",
-                linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_data, log->tx.sec_level);
-        log_lladdr_compact(&linkaddr_node_addr);
-        printf("->");
-        log_lladdr_compact(&log->tx.dest);
-        printf(", len %3u, seq %3u, st %d %2d",
-                log->tx.datalen, log->tx.seqno, log->tx.mac_tx_status, log->tx.num_tx);
-        if(log->tx.drift_used) {
-          printf(", dr %3d", log->tx.drift);
-        }
-        printf("\n");
-        break;
-      case tsch_log_rx:
-        printf("%s-%u-%u rx ",
-                log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_data, log->rx.sec_level);
-        log_lladdr_compact(&log->rx.src);
-        printf("->");
-        log_lladdr_compact(log->rx.is_unicast ? &linkaddr_node_addr : NULL);
-        printf(", len %3u, seq %3u",
-                log->rx.datalen, log->rx.seqno);
-        printf(", edr %3d", (int)log->rx.estimated_drift);
-        if(log->rx.drift_used) {
-          printf(", dr %3d\n", log->rx.drift);
-        } else {
-          printf("\n");
-        }
-        break;
-      case tsch_log_message:
-        printf("%s\n", log->message);
-        break;
-    }
-    /* Remove input from ringbuf */
-    ringbufindex_get(&log_ringbuf);
-  }
+tsch_log_process_pending(void) {
+	static int last_log_dropped = 0;
+	int16_t log_index;
+	/* Loop on accessing (without removing) a pending input packet */
+	if(log_dropped != last_log_dropped) {
+		printf("[WARN: TSCH-LOG  ] logs dropped %u\n", log_dropped);
+		last_log_dropped = log_dropped;
+	}
+	while((log_index = ringbufindex_peek_get(&log_ringbuf)) != -1) {
+		struct tsch_log_t *log = &log_array[log_index];
+		if(log->link == NULL) {
+			printf("[INFO: TSCH-LOG  ] {asn %02x.%08lx link-NULL} ", log->asn.ms1b, log->asn.ls4b);
+		} else {
+			struct tsch_slotframe *sf = tsch_schedule_get_slotframe_by_handle(log->link->slotframe_handle);
+			printf("[INFO: TSCH-LOG  ] {asn %02x.%08lx link %2u %3u %3u %2u %2u ch %2u} ",
+			       log->asn.ms1b, log->asn.ls4b,
+			       log->link->slotframe_handle, sf ? sf->size.val : 0,
+			       log->burst_count, log->link->timeslot + log->burst_count, log->link->channel_offset,
+			       log->channel);
+		}
+		switch(log->type) {
+		case tsch_log_tx:
+			printf("%s-%u-%u tx ",
+			       linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_data, log->tx.sec_level);
+			printf("%s-%u-%u tx ",
+			       linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_broad, log->tx.sec_level);
+			log_lladdr_compact(&linkaddr_node_addr);
+			printf("->");
+			log_lladdr_compact(&log->tx.dest);
+			printf(", len %3u, seq %3u, st %d %2d",
+			       log->tx.datalen, log->tx.seqno, log->tx.mac_tx_status, log->tx.num_tx);
+			if(log->tx.drift_used) {
+				printf(", dr %3d", log->tx.drift);
+			}
+			printf("\n");
+			break;
+		case tsch_log_rx:
+			printf("%s-%u-%u rx ",
+			       log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_data, log->rx.sec_level);
+			printf("%s-%u-%u rx ",
+			       log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_broad, log->rx.sec_level);
+			log_lladdr_compact(&log->rx.src);
+			printf("->");
+			log_lladdr_compact(log->rx.is_unicast ? &linkaddr_node_addr : NULL);
+			printf(", len %3u, seq %3u",
+			       log->rx.datalen, log->rx.seqno);
+			printf(", edr %3d", (int)log->rx.estimated_drift);
+			if(log->rx.drift_used) {
+				printf(", dr %3d\n", log->rx.drift);
+			} else {
+				printf("\n");
+			}
+			break;
+		case tsch_log_message:
+			printf("%s\n", log->message);
+			break;
+		}
+		/* Remove input from ringbuf */
+		ringbufindex_get(&log_ringbuf);
+	}
 }
 /*---------------------------------------------------------------------------*/
 /* Prepare addition of a new log.
  * Returns pointer to log structure if success, NULL otherwise */
 struct tsch_log_t *
-tsch_log_prepare_add(void)
-{
-  int log_index = ringbufindex_peek_put(&log_ringbuf);
-  if(log_index != -1) {
-    struct tsch_log_t *log = &log_array[log_index];
-    log->asn = tsch_current_asn;
-    log->link = current_link;
-    log->burst_count = tsch_current_burst_count;
-    log->channel = tsch_current_channel;
-    return log;
-  } else {
-    log_dropped++;
-    return NULL;
-  }
+tsch_log_prepare_add(void) {
+	int log_index = ringbufindex_peek_put(&log_ringbuf);
+	if(log_index != -1) {
+		struct tsch_log_t *log = &log_array[log_index];
+		log->asn = tsch_current_asn;
+		log->link = current_link;
+		log->burst_count = tsch_current_burst_count;
+		log->channel = tsch_current_channel;
+		return log;
+	} else {
+		log_dropped++;
+		return NULL;
+	}
 }
 /*---------------------------------------------------------------------------*/
 /* Actually add the previously prepared log */
 void
-tsch_log_commit(void)
-{
-  if(log_active == 1) {
-    ringbufindex_put(&log_ringbuf);
-    process_poll(&tsch_pending_events_process);
-  }
+tsch_log_commit(void) {
+	if(log_active == 1) {
+		ringbufindex_put(&log_ringbuf);
+		process_poll(&tsch_pending_events_process);
+	}
 }
 /*---------------------------------------------------------------------------*/
 /* Initialize log module */
 void
-tsch_log_init(void)
-{
-  if(log_active == 0) {
-    ringbufindex_init(&log_ringbuf, TSCH_LOG_QUEUE_LEN);
-    log_active = 1;
-  }
+tsch_log_init(void) {
+	if(log_active == 0) {
+		ringbufindex_init(&log_ringbuf, TSCH_LOG_QUEUE_LEN);
+		log_active = 1;
+	}
 }
 /*---------------------------------------------------------------------------*/
 /* Stop log module */
 void
-tsch_log_stop(void)
-{
-  if(log_active == 1) {
-    tsch_log_process_pending();
-    log_active = 0;
-  }
+tsch_log_stop(void) {
+	if(log_active == 1) {
+		tsch_log_process_pending();
+		log_active = 0;
+	}
 }
 
 #endif /* TSCH_LOG_PER_SLOT */
