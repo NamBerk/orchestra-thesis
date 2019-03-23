@@ -462,9 +462,9 @@ tsch_rx_process_pending()
       && frame.fcf.frame_version == FRAME802154_IEEE802154_2015
       && frame.fcf.frame_type == FRAME802154_BEACONFRAME;
       
-      int is_broad = ret && frame.fcf.frame_type == FRAME802154_BROADFRAME ;
+      //int is_broad = ret && frame.fcf.frame_type == FRAME802154_BROADFRAME ;
 	
-    if(is_data||is_broad) {
+    if(is_data) {
       /* Skip EBs and other control messages */
       /* Copy to packetbuf for processing */
       packetbuf_copyfrom(current_input->payload, current_input->len);
@@ -472,7 +472,7 @@ tsch_rx_process_pending()
       packetbuf_set_attr(PACKETBUF_ATTR_CHANNEL, current_input->channel);
     }
 
-    if(is_data || is_broad) {///////////
+    if(is_data ) {///////////
       /* Pass to upper layers */
       packet_input();
     } else if(is_eb) {

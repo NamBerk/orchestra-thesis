@@ -15,6 +15,7 @@ author: Jan Sturm
 #include "stdio.h"
 #include "os/sys/node-id.h"
 #include "net/ipv6/tcpip.h"
+#include "net/queuebuf.h"
 
 #ifdef LEDS
 #include "leds.h"
@@ -209,6 +210,7 @@ void send_new_packet(void *bid) {
 
   print_rnc_packet("SINK INITIAL BROADCAST", &p); /////
   packetbuf_copyfrom(&p, sizeof(p));
+  queuebuf_new_from_packetbuf();
   //broadcast_send(&broadcast);
   //simple_udp_sendto(&broadcast_connection, str, strlen(str), &linkaddr_null);
   NETSTACK_NETWORK.output(&linkaddr_null);
@@ -368,6 +370,7 @@ void rnc_send_nack_reply(void *p) {
 void rnc_broadcast(void *p) {
   print_rnc_packet("RNC BROADCAST", &packet);
   packetbuf_copyfrom(&packet, sizeof(packet));
+  queuebuf_new_from_packetbuf();
   NETSTACK_NETWORK.output(&linkaddr_null);
  // broadcast_send(&broadcast);
  //NETSTACK_MAC.send(NULL,NULL);
