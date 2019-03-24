@@ -91,8 +91,8 @@ tsch_log_process_pending(void) {
 		case tsch_log_tx:
 			printf("%s-%u-%u tx ",
 			       linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_data, log->tx.sec_level);
-			printf("%s-%u-%u tx ",
-			       linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_broad, log->tx.sec_level);
+		/*printf("%s-%u-%u tx ",
+			       linkaddr_cmp(&log->tx.dest, &linkaddr_null) ? "bc" : "uc", log->tx.is_broad, log->tx.sec_level);*/
 			log_lladdr_compact(&linkaddr_node_addr);
 			printf("->");
 			log_lladdr_compact(&log->tx.dest);
@@ -106,8 +106,8 @@ tsch_log_process_pending(void) {
 		case tsch_log_rx:
 			printf("%s-%u-%u rx ",
 			       log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_data, log->rx.sec_level);
-			printf("%s-%u-%u rx ",
-			       log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_broad, log->rx.sec_level);
+			/*printf("%s-%u-%u rx ",
+			       log->rx.is_unicast == 0 ? "bc" : "uc", log->rx.is_broad, log->rx.sec_level);*/
 			log_lladdr_compact(&log->rx.src);
 			printf("->");
 			log_lladdr_compact(log->rx.is_unicast ? &linkaddr_node_addr : NULL);

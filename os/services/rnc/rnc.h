@@ -13,23 +13,30 @@ author: Jan Sturm
 #include "net/mac/tsch/tsch.h"
 //#include "os/net/rime/rime.h"
 
-#include "./gf.h"
-#include "./util.h"
-#include "./params.h"
+#include "gf.h"
+#include "util.h"
+#include "params.h"
 #include "net/ipv6/tcpip.h" 
 #include "net/ipv6/simple-udp.h"
 
-/*struct tsch_packet {
+/*struct rnc_pkt{
 	uint8_t payload[M];
 	uint8_t batch_id;    //bu kismi tsch types in icine aldik
 	uint8_t coeff[K];
 	//uint8_t msg_type;
 };*/
 
-
-
-void receiver(const void *data, uint16_t len,
-  const linkaddr_t *from, const linkaddr_t *dest);
+struct simple_udp_connection *c;
+void receiver(struct simple_udp_connection *c,
+			  const uip_ipaddr_t *from,
+			  uint16_t sender_port,
+			  const uip_ipaddr_t *receiver_addr,
+			  uint16_t receiver_port,
+			  const uint8_t *data,
+			  uint16_t datalen
+				);
+//void receiver(const void *data, uint16_t len,
+  //const linkaddr_t *from, const linkaddr_t *dest);
 void init_rnc(void);
 void start_rnc(void);
 void generate_init_coeffs(uint8_t dia);

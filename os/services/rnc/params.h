@@ -8,7 +8,7 @@ author: Jan Sturm
 
 /* uncomment for additional debug/demo messages */
 //#define DEBUG
-//#define DEMO
+#define DEMO
 
 /* uncomment to turn on LED if a batch is fully recovered*/
 #define LEDS
@@ -34,7 +34,7 @@ author: Jan Sturm
 #define K 8
 
 /* payload size in bytes */
-#define M 16
+#define M 8
 
 /* ######################## TIMEOUT values #########################*/
 
