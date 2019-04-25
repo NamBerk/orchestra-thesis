@@ -73,7 +73,7 @@ const uint16_t tsch_timeslot_timing_us_10000[tsch_ts_elements_count] = {
     192, /* RxTx */
    2400, /* MaxAck */
    4256, /* MaxTx */
-  10000, /* TimeslotLength */
+  15000, /* TimeslotLength */
 };
 
 /** @} */

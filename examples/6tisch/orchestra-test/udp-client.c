@@ -1,3 +1,4 @@
+/*DAG nodes of the network that utilize UDP and serve as a UDP client*/
 #include "contiki.h"
 #include "net/routing/routing.h"
 #include "random.h"
@@ -25,55 +26,55 @@ static struct simple_udp_connection udp_conn;
 PROCESS(udp_client_process, "UDP client");
 AUTOSTART_PROCESSES(&udp_client_process);
 /*---------------------------------------------------------------------------*/
+/*UDP callback function is called every time one of the DAG nodes receives a new packet.*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
-         const uip_ipaddr_t *sender_addr,
-         uint16_t sender_port,
-         const uip_ipaddr_t *receiver_addr,
-         uint16_t receiver_port,
-         const uint8_t *data,
-         uint16_t datalen)
-{
+                const uip_ipaddr_t *sender_addr,
+                uint16_t sender_port,
+                const uip_ipaddr_t *receiver_addr,
+                uint16_t receiver_port,
+                const uint8_t *data,
+                uint16_t datalen) {
 
-  LOG_INFO("Received response '%.*s' from ", datalen, (char *) data);
-  LOG_INFO_6ADDR(sender_addr);
+	LOG_INFO("Received response '%.*s' from ", datalen, (char *) data);
+	LOG_INFO_6ADDR(sender_addr);
 
 }
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(udp_client_process, ev, data)
-{
-  static struct etimer periodic_timer;
-  static unsigned count;
-  static char str[32];
-  uip_ipaddr_t dest_ipaddr;
+PROCESS_THREAD(udp_client_process, ev, data) {
+	static struct etimer periodic_timer;
+	static unsigned count;
+	static char str[32];
+	uip_ipaddr_t dest_ipaddr;
 
-  PROCESS_BEGIN();
+	PROCESS_BEGIN();
 
-  /* Initialize UDP connection */
-  simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
-                      UDP_SERVER_PORT, udp_rx_callback);
-					  
+	/* Initialize UDP connection */
+	simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
+	                    UDP_SERVER_PORT, udp_rx_callback);
+
+	/*Initialize Random Linear Network Coding*/
 	init_rnc();
 
-  etimer_set(&periodic_timer, SEND_INTERVAL);
-  while(1) {
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+	etimer_set(&periodic_timer, SEND_INTERVAL);
+	while(1) {
+		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
 
-    if(NETSTACK_ROUTING.node_is_reachable() && NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr)) {
-      /* Send to DAG root */
-      LOG_INFO("Sending request %u to ", count);
-      LOG_INFO_6ADDR(&dest_ipaddr);
-      LOG_INFO_("\n");
-      snprintf(str, sizeof(str), "hello %d", count);
-      simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
-      count++;
-    } else {
-      LOG_INFO("Not reachable yet\n");
-    }
+		if(NETSTACK_ROUTING.node_is_reachable() && NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr)) {
+			/* Send packet to the sink node and count the number of packet arrived in sink node. If the sink node is not reachable warn the user. */
+			LOG_INFO("Sending request %u to ", count);
+			LOG_INFO_6ADDR(&dest_ipaddr);
+			LOG_INFO_("\n");
+			snprintf(str, sizeof(str), "hello %d", count);
+			simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
+			count++;
+		} else {
+			LOG_INFO("Not reachable yet\n");
+		}
+		/*add jitter*/
+		etimer_set(&periodic_timer, SEND_INTERVAL);
+	}
 
-    etimer_set(&periodic_timer, SEND_INTERVAL);
-  }
-
-  PROCESS_END();
+	PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/

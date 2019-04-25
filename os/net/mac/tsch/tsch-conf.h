@@ -434,7 +434,7 @@ by default, useful in case of duplicate seqno */
 
 /* Configurable Rx guard time is micro-seconds */
 #ifndef TSCH_CONF_RX_WAIT
-#define TSCH_CONF_RX_WAIT 2200
+#define TSCH_CONF_RX_WAIT 2500
 #endif /* TSCH_CONF_RX_WAIT */
 
 #endif /* __TSCH_CONF_H__ */

@@ -1,0 +1,20 @@
+rnc.c implements all the functions to perform Random Linear Network
+Coding based broadcast. Within this file the RLNC is initialized for 
+all nodes in the network. The nodes in the network could identify 
+themselves either as sink, intermediate or destination node. This 
+identification happens due to the node's ID. Furthermore, broadcast connection 
+is initialized and it is ensured that the transmission to be from sink node to 
+destination nodes through intermediate nodes. Upon the reception of the packets
+ the callback function "receiver" is called. Here the packet is parsed in order
+to determine how to process the incoming packet. In rnc.h the structure of a 
+RNC-packet is defined as struct rnc_pkt. As mentioned the direction of the 
+broadcast is from sink node to destination nodes.  In the function the sink 
+initiates the  broadcast by sending out the first batch. Dependent on which 
+value was set for NUMBER_OF_BATCHES in params.h the source will repeat sending 
+batches in a INTERVAL_BATCH seconds interval. In turn, each packet in a batch
+is sent out after INTERVAL_PKT seconds. The packets sent by the sink
+are uncoded which means that all coefficients are 0x00 except one
+which is 0x01. Data is processed for all non-sink nodes. Even though that's the
+case only the destination nodes could decode the encoded packets by the intermediate 
+nodes. Destination nodes use Gaussian Elimination in order to decode the packet.
+

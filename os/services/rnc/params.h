@@ -23,7 +23,7 @@ author: Jan Sturm
 #define NUMBER_OF_BATCHES 1
 
 /* The node ids of the sources */
-#define ID_SOURCES {7,6}    /////// ???
+#define ID_SOURCES {12,13,14,15}    /////// ???
 /* if sink is relay aswell, add here too */
 #define ID_RELAY_SINKS {}
 

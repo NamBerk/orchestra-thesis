@@ -34,10 +34,7 @@ static struct ctimer timer_batch;
 static struct ctimer timer_packet;
 static struct ctimer timer_send;
 static struct ctimer timer_nack;
-//static struct ctimer timer_nack_reply;
 
-/* for lazy NACK */
-//static uint8_t nack_multiplier = 1;
 
 // count how much the source already sent in one batch
 static uint8_t counter_send_pkt = 0;
@@ -61,15 +58,9 @@ static uint8_t seen_packets = 0;
 /* give nodes priority in broadcasting if they didn't sent a long time */
 static uint8_t priority = 0;
 
-/* indicates if a NACK_REPLY message was already received */
-//static uint8_t nack_reply_received = 0;
 
-//static const struct broadcast_callbacks broadcast_call = {broadcast_recv};
-
-//static struct uip_udp_conn udp_conn;
-//static struct broadcast_callback current_callback = {receiver};
 static struct simple_udp_connection broadcast_connection;
-
+/*the callback function of created UDP connection. Upon the reception of the packets the "receiver function is called"*/
 void receiver(struct simple_udp_connection *c,
 			  const uip_ipaddr_t *from,
 			  uint16_t sender_port,
@@ -79,16 +70,11 @@ void receiver(struct simple_udp_connection *c,
 			  uint16_t datalen
 				)
  { 
-	printf("reached rnc.c 1\n");
- /* if (mode != MODE_SINK && rank_coeff_matrix != FULL_RANK) { //
-    nack_multiplier = 1;
-    ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
-  }*/
-  struct tsch_packet *p_recv = (struct tsch_packet *)packetbuf_dataptr();
+	
+ 
+  struct rnc_pkt *p_recv = (struct rnc_pkt *)packetbuf_dataptr();
 
-  /*switch (p_recv->msg_type) {
-  case MESSAGE_TYPE_PAYLOAD:*/
-    if (node_id != 1) { //////////
+    if (node_id != 1) { 
 	
 
       // only care for batch_ids greater/equal then oneself's
@@ -104,40 +90,12 @@ void receiver(struct simple_udp_connection *c,
 		printf("passed process data \n");
       }
     }
-  //  break;
-/*
-  case MESSAGE_TYPE_NACK:
-    if (mode != MODE_SINK) {  ////////////
-      PRINT_DEBUG("\nreceived NACK  (source: %d.%d)\n", from->u8[0],
-                  from->u8[1]);
-      if (seen_packets & p_recv->coeff[0]) {
-        // node can provide data
-        PRINT_DEBUG("@@@ waiting to send NACK_REPLY\n");
-        ctimer_set(&timer_nack_reply, DELAY_NACK_REPLY, rnc_send_nack_reply,
-                   NULL);
-      }
-    }
-
-    break;
-
-  case MESSAGE_TYPE_NACK_REPLY:   //////////
-    PRINT_DEMO("\nreceived NACK_REPLY message  (source: %d.%d)\n", from->u8[0],
-               from->u8[1]);
-    PRINT_DEMO("   --> batch-id: %d\n", p_recv->batch_id);
-    gf_vec_print("   --> data", p_recv->payload, M);
-    gf_vec_print("   --> coeffs", p_recv->coeff, K);
-    nack_reply_received = 1;
-    if (mode != MODE_SINK && rank_coeff_matrix != FULL_RANK) { //////
-      process_data(p_recv);
-    }
-
-    break;*/
-  //}
+ 
 }
 
 /*--------------------------------------------------------------------------------------------*/
 
-void init_rnc(void) { // should be altered according to my implementation
+void init_rnc(void) { /*initiliation of the Random Linear Network Coding*/
 
   /* init memory */
   coeff_matrix = malloc(K * sizeof(uint8_t *));
@@ -168,15 +126,14 @@ void init_rnc(void) { // should be altered according to my implementation
   }
   
   PRINT_DEMO("id: %u, mode: %u\n", node_id, mode);
-	/*struct uip_udp_conn *udp_conn=udp_broadcast_new(UDP_SERVER, NULL);
-	udp_bind(udp_conn,UDP_SERVER);*/
-	simple_udp_register(&broadcast_connection,UDP_SERVER,NULL,UDP_CLIENT,receiver);
-  //broadcast_open(&broadcast, 111, &broadcast_call);
+  /*create a udp connection */
+	simple_udp_register(&broadcast_connection,UDP_SERVER,NULL,UDP_SERVER,receiver);
+  
 }
 
 void start_rnc(void) {
 
-  if (node_id == 1) { /////
+  if (node_id == 1) { /*only sink node (where the node id is 1) could start sending the packets*/
     send_new_batch(NULL);
   }
 }
@@ -199,7 +156,7 @@ static uint8_t local_packet = 0x00;
 void send_new_packet(void *bid) {
 
   uint8_t i;
-  struct tsch_packet p;
+  struct rnc_pkt p;
  p.msg_type = MESSAGE_TYPE_PAYLOAD;
   p.batch_id = *(uint8_t *)bid;
   for (i = 0; i < M; i++) {
@@ -220,8 +177,7 @@ void send_new_packet(void *bid) {
   print_rnc_packet("SINK INITIAL BROADCAST", &p); /////
   packetbuf_copyfrom(&p, sizeof(p));
   queuebuf_new_from_packetbuf();
-  //simple_udp_send(&broadcast_connection, (struct tsch_packet )p, sizeof(p));
-  NETSTACK_NETWORK.output(NULL);
+  NETSTACK_NETWORK.output(NULL); /*broadcast the packets in the packet buffer*/
   
 
   /* K packets in one batch */
@@ -230,18 +186,18 @@ void send_new_packet(void *bid) {
   }
 }
 
-void generate_init_coeffs(uint8_t dia) {
-printf("initcoeff \n");
+void generate_init_coeffs(uint8_t dia) { /*generation of the random coefficients*/
+
   memset(coeff_matrix[dia], 0x00, K);
   coeff_matrix[dia][dia] = 0x01;
 }
 
-void process_data(struct tsch_packet *p_recv) {
+void process_data(struct rnc_pkt *p_recv) {
 printf("got inside processs data \n");
   if (local_batch_id < p_recv->batch_id) {
 	  
     if (rank_coeff_matrix != FULL_RANK &&
-        (node_id == 7 || node_id == 6 )){ // || mode == MODE_RELAY_PLUS_SINK
+        (mode == MODE_SOURCE)){ 
       printf("ERROR  --> batch %u not recovered\n", local_batch_id);
     }
     local_batch_id = p_recv->batch_id;
@@ -276,7 +232,7 @@ printf("rank \n");
 
     print_lse(coeff_matrix, recovered, packet_queue);
 
-    if (node_id != 1 || node_id != 6 || node_id != 7 ) {
+    if (node_id != 1 ) {
       if (rank_old < rank_coeff_matrix) {
         /* received new information, share them */
 		printf("ssssss \n");
@@ -285,7 +241,7 @@ printf("rank \n");
     }
 
     if (rank_coeff_matrix == FULL_RANK) {
-      if (node_id == 7 || node_id == 6 ) { ///////|| mode == MODE_RELAY_PLUS_SINK
+      if (mode == MODE_SOURCE ) { 
 #if GF != 2
         if (check_data(recovered)) {
           printf("--> REC SUCCESSFULL (batch-id= %d)\n", local_batch_id);
@@ -308,7 +264,7 @@ printf("rank \n");
 }
 
 /* generate a random linear combination of all packets in the packet_queue */
-void rnc_generate_payload(struct tsch_packet *p, uint8_t batch_id) {
+void rnc_generate_payload(struct rnc_pkt *p, uint8_t batch_id) {
 	printf("generate payload \n");
   p->batch_id = batch_id;
   uint8_t b[K];
@@ -317,7 +273,7 @@ void rnc_generate_payload(struct tsch_packet *p, uint8_t batch_id) {
   gf_vec_dot_matrix(p->coeff, b, coeff_matrix, K, K);
 }
 
-static struct tsch_packet packet;
+static struct rnc_pkt packet;
 void rnc_send_pkt_delay(uint8_t batch_id) {
 
   packet.msg_type = MESSAGE_TYPE_PAYLOAD;
@@ -325,72 +281,18 @@ void rnc_send_pkt_delay(uint8_t batch_id) {
   ctimer_set(&timer_send, DELAY_RNC_PKT(priority), rnc_broadcast, NULL);
   ++priority;
 }
-/*
-void rnc_send_nack(void *p) {
 
-  // TODO use separate struct --> not implemented in this lab
-  struct tsch_packet pkt_nack;
-  pkt_nack.msg_type = MESSAGE_TYPE_NACK;
-  pkt_nack.batch_id = local_batch_id;
-
-   //indicate which packets are missing
-     //--> store it in first coefficient
-  
-  pkt_nack.coeff[0] = 0x00;
-  uint8_t i;
-  for (i = 0; i < K; i++) {
-    if (!coeff_matrix[i][i]) {
-      pkt_nack.coeff[0] = SET_BIT(pkt_nack.coeff[0], i);
-    }
-  }
-
-  PRINT_DEBUG("RNC BROADCAST - NACK\n");
-  print_rnc_packet("RNC BROADCAST - NACK", &pkt_nack);
-  packetbuf_copyfrom(&pkt_nack, sizeof(pkt_nack));
-  queuebuf_new_from_packetbuf();
-  //broadcast_send(&broadcast);
-  NETSTACK_NETWORK.output(&linkaddr_null);
- // NETSTACK_MAC.send(NULL,NULL);
-  ctimer_set(&timer_nack, DELAY_NACK(nack_multiplier), rnc_send_nack, NULL);
-
-   //lazy NACK 
-  nack_multiplier *= 2;
-}
- 
-
-void rnc_send_nack_reply(void *p) {
-   //only send NACK-REPLY if nobody else sent one so far 
-  if (!nack_reply_received) {
-    struct tsch_packet pkt_nack_reply;
-    pkt_nack_reply.msg_type = MESSAGE_TYPE_NACK_REPLY;
-    rnc_generate_payload(&pkt_nack_reply, local_batch_id);
-
-    PRINT_DEBUG("RNC BROADCAST - NACK REPLY\n");
-    print_rnc_packet("RNC BROADCAST - NACK REPLY", &pkt_nack_reply);
-    packetbuf_copyfrom(&pkt_nack_reply, sizeof(pkt_nack_reply));
-	queuebuf_new_from_packetbuf();
-	NETSTACK_NETWORK.output(&linkaddr_null);
-    //broadcast_send(&broadcast);
-	//NETSTACK_MAC.send(NULL,NULL);
-  } else {
-    PRINT_DEBUG("discarding NACK REPLY\n");
-    nack_reply_received = 0;
-  }
-}
-*/
 void rnc_broadcast(void *p) {
  print_rnc_packet("RNC BROADCAST", &packet);
   packetbuf_copyfrom(&packet, sizeof(packet));
   queuebuf_new_from_packetbuf();
- NETSTACK_NETWORK.output(NULL);
- // simple_udp_send(&broadcast_connection, (struct tsch_packet *)packet, sizeof(packet));
- // broadcast_send(&broadcast);
- //NETSTACK_MAC.send(NULL,NULL);
+ NETSTACK_NETWORK.output(NULL); /*broadcast*/
+
   priority = 0;
 }
 
 // returns index where packet was stored
-uint8_t store_coeffs_and_payload(struct tsch_packet *p_recv) {
+uint8_t store_coeffs_and_payload(struct rnc_pkt *p_recv) {
 
   /* how many leading zeros the coefficient vector contains */
   uint8_t index_zero = get_zeros(p_recv->coeff, K);
@@ -485,7 +387,7 @@ void print_batch(const char *s, uint8_t **v, uint8_t id) {
   PRINT_DEMO("\n");
 }
 
-void print_rnc_packet(const char *s, struct tsch_packet *p) {
+void print_rnc_packet(const char *s, struct rnc_pkt *p) {
 
   PRINT_DEMO("--> %s (batch-id= %u)\n", s, p->batch_id);
   gf_vec_print("   data", p->payload, M);

@@ -1,7 +1,4 @@
-/*
-SEEMOO - Secure Mobile Networking Lab and Project, Winter 2017/18
-author: Jan Sturm
-*/
+
 
 #include "gf.h"
 #include "sys/node-id.h"
@@ -64,10 +61,10 @@ uint8_t gaussian_elimination_iter(uint8_t **A, uint8_t **x, uint8_t **b,
 
   uint8_t rank = gf_matrix_rank(A, K);
 
-  // only sinks recover packets and only if we have a full rank coefficient
-  // matrix
-  if ((node_id==7 && node_id==6 /*|| mode == MODE_RELAY_PLUS_SINK*/) && //// change should be done accroding to the source nodes as 
-      rank == FULL_RANK) { 	                                 //// in our case the dest is source nodes
+  /* only destination nodes recover packets and only if we have a full rank coefficient
+  matrix*/
+  if ((mode == MODE_SOURCE ) &&  
+      rank == FULL_RANK) { 	                                 
     uint8_t *tmp_b = malloc(M);
 
     /* back substitution */

@@ -1,3 +1,6 @@
+/*Create the new slotframe that is based on broadcast* as the new rule*/
+/*New rule is included in the orchestra-conf.h and orchestra.h files*/
+
 #include "contiki.h"
 #include "orchestra.h"
 #include "net/packetbuf.h"
@@ -6,7 +9,6 @@
 #include "os/services/rnc/rnc.h"
 #include "net/ipv6/tcpip.h"
 #include "stdio.h"
-//#include "broad.h"
 #include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip.h"
 
@@ -14,7 +16,7 @@
 #define UDP_SERVER	5678
 static uint16_t slotframe_handle = 0;
 static uint16_t channel_offset = 0;
-static struct tsch_slotframe *sf_br;
+static struct tsch_slotframe *sf_br;/* new slotframe */
 //static broadcast_input_callback current_callback = NULL;
 
 /*---------------------------------------------------------------------------*/
@@ -75,13 +77,12 @@ static void
 init(uint16_t sf_handle) {
 
 	slotframe_handle = sf_handle;
-	channel_offset = sf_handle; // => 1 / look at the orchestra-conf.h for the order
+	channel_offset = sf_handle; 
 	sf_br = tsch_schedule_add_slotframe(slotframe_handle , ORCHESTRA_BROADCAST_PERIOD);
 	tsch_schedule_add_link(sf_br,
 	                       LINK_OPTION_TX|LINK_OPTION_RX,
 	                       LINK_TYPE_NORMAL, &tsch_broadcast_address,
 	                       get_node_timeslot(&linkaddr_node_addr), channel_offset);
-	//broadcast_set_input_callback(receiver);
 	broad_send();
 
 

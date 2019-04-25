@@ -1,0 +1,3 @@
+This file consists the rules of the Orchestra where they dictate the scheduling of Orchestra.
+The slotframe is added in the form of a rule namely 'orchestra-rule-broadcast.c'. This new slotframe is based 
+on broadcast.

@@ -26,6 +26,8 @@
  * This file is part of the Contiki operating system.
  *
  */
+ 
+ /*Sink node of the network that utilizes UDP and serves as a UDP server*/
 
 #include "contiki.h"
 #include "net/routing/routing.h"
@@ -41,7 +43,7 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-//#define WITH_SERVER_REPLY 1
+
 #define UDP_CLIENT_PORT	8765
 #define UDP_SERVER_PORT	5678
 
@@ -50,6 +52,7 @@ static struct simple_udp_connection udp_conn;
 PROCESS(udp_server_process, "UDP server");
 AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
+/*UDP callback function is called every time sink node receives a new packet. */
 static void
 udp_rx_callback(struct simple_udp_connection *c,
          const uip_ipaddr_t *sender_addr,
@@ -76,7 +79,7 @@ PROCESS_THREAD(udp_server_process, ev, data)
   /* Initialize UDP connection */
   simple_udp_register(&udp_conn, UDP_SERVER_PORT, NULL,
                       UDP_CLIENT_PORT, udp_rx_callback);
-
+/*Initialize Random Linear Network Coding*/
 	init_rnc();
 
   PROCESS_END();
