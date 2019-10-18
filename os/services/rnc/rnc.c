@@ -1,7 +1,4 @@
-/*
-SEEMOO - Secure Mobile Networking Lab and Project, Winter 2017/18
-author: Jan Sturm
-*/
+
 
 #include "contiki.h"
 #include "os/net/netstack.h"
