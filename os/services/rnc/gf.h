@@ -1,7 +1,3 @@
-/*
-   SEEMOO - Secure Mobile Networking Lab and Project, Winter 2017/18
-   author: Jan Sturm
- */
 
 #ifndef RNC_GF_H_
 #define RNC_GF_H_
