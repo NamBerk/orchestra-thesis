@@ -1,7 +1,3 @@
-/*
-SEEMOO - Secure Mobile Networking Lab and Project, Winter 2017/18
-author: Jan Sturm
-*/
 
 #include "./gf.h"
 #include "./gf_precomp.h"
